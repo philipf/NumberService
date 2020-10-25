@@ -17,13 +17,9 @@ namespace NumberService
         private readonly TelemetryClient _telemetry;
         private readonly Container _container;
 
-        public PutNumber(TelemetryClient telemetry, CosmosClient cosmos)
+        public PutNumber(TelemetryClient telemetry)
         {
             _telemetry = telemetry;
-            _container = cosmos
-            .GetContainer(
-                Environment.GetEnvironmentVariable("CosmosDbDatabaseId"),
-                Environment.GetEnvironmentVariable("CosmosDbContainerId"));
         }
 
         [FunctionName("PutNumber")]
@@ -32,16 +28,12 @@ namespace NumberService
             string key,
             ILogger log)
         {
-            var response = (await _container.Scripts.ExecuteStoredProcedureAsync<NumberResult>(
-                "incrementNumber",
-                new PartitionKey(key),
-                new dynamic[] { key, _clientId }));
-
-            var number = response.Resource;
-            number.RequestCharge = response.RequestCharge;
-
-            // As long as sproc is written correctly, this case should never be true.
-            if (number.ClientId != _clientId) throw new InvalidOperationException($"Response ClientId \"{number.ClientId}\" does not match ClientId \"{_clientId}\".");
+            
+            var number = new {
+            	Number = "test",
+                ETag = "etag",
+                Key = "Key"
+            };
 
             log.LogInformation($"Number {number.Number} issued to clientId {number.ClientId} with ETag {number.ETag} from key {number.Key}");
 
@@ -49,14 +41,14 @@ namespace NumberService
                 "PutNumber",
                 properties: new Dictionary<string, string>
                     {
-                        { "Number", number.Number.ToString() },
-                        { "ClientId", _clientId },
-                        { "Key", number.Key },
-                        { "ETag", number.ETag }
+                        { "Number","123" },
+                        { "ClientId", "_clientId" },
+                        { "Key", "1" },
+                        { "ETag", "number.ETag" }
                     },
                 metrics: new Dictionary<string, double>
                     {
-                        { "CosmosRequestCharge", response.RequestCharge }
+                        { "CosmosRequestCharge", 0 }
                     });
 
             return new OkObjectResult(number);
