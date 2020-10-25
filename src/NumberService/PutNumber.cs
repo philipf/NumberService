@@ -32,7 +32,8 @@ namespace NumberService
             var number = new {
             	Number = "test",
                 ETag = "etag",
-                Key = "Key"
+                Key = "Key",
+                ClientId = "ClientId"
             };
 
             log.LogInformation($"Number {number.Number} issued to clientId {number.ClientId} with ETag {number.ETag} from key {number.Key}");
